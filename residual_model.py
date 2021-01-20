@@ -1,5 +1,6 @@
 import torch.nn as nn
 import torch.nn.functional as F
+from torchsummary import summary
 
 class ResidualBlock(nn.Module):
     def __init__(self, in_features):
@@ -92,7 +93,7 @@ class Discriminator(nn.Module):
         return F.avg_pool2d(x, x.size()[2:]).view(x.size()[0], -1)
 
 if __name__ == "__main__":
-    G12 = Generator(1,1,5)
-    print(G12)
+    G12 = Generator(1,1,9)
+    print(summary(G12,(1,32,32)))
     D1 = Discriminator(1)
-    print(D1)
+    print(summary(D1,(1,32,32)))

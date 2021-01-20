@@ -4,6 +4,7 @@ import torch
 from torch.autograd import Variable
 import torchvision.utils as vutils 
 import model
+import residual_model
 import data
 
 from torch.utils.tensorboard import SummaryWriter
@@ -141,13 +142,24 @@ def main(args):
 
     writer = SummaryWriter()
 
-    G_12 = model.G12(args.batch_size)
+    ##=== run with model package ====#
+    # G_12 = model.G12(args.batch_size)
+    # G_12 = G_12.float()
+    # G_21 = model.G21(args.batch_size)
+    # G_21 = G_21.float()
+    # D_1 = model.D1(args.batch_size)
+    # D_1 = D_1.float()
+    # D_2 = model.D2(args.batch_size)
+    # D_2 = D_2.float()
+
+    ##===run with residual model ====#
+    G_12 = residual_model.Generator(1,1)
     G_12 = G_12.float()
-    G_21 = model.G21(args.batch_size)
+    G_21 = residual_model.Generator(1,1)
     G_21 = G_21.float()
-    D_1 = model.D1(args.batch_size)
+    D_1 = residual_model.Discriminator(1)
     D_1 = D_1.float()
-    D_2 = model.D2(args.batch_size)
+    D_2 = residual_model.Discriminator(1)
     D_2 = D_2.float()
 
     if torch.cuda.is_available():
