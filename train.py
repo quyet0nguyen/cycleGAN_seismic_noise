@@ -6,7 +6,6 @@ import torchvision.utils as vutils
 import model
 import residual_model
 import data
-
 from torch.utils.tensorboard import SummaryWriter
 
 def train(G_12, G_21, D_1, D_2, optimizer_G, optimizer_D, batch_size, num_epochs, X_train, noised_train_data, writer):
@@ -152,6 +151,11 @@ def main(args):
     # D_2 = model.D2(args.batch_size)
     # D_2 = D_2.float()
 
+    # G_12.weight_init(mean = 0.0, std = 0.02)
+    # G_21.weight_init(mean = 0.0, std = 0.02)
+    # D_1.weight_init(mean = 0.0, std = 0.02)
+    # D_2.weight_init(mean = 0.0, std = 0.02)
+
     ##===run with residual model ====#
     G_12 = residual_model.Generator(1,1)
     G_12 = G_12.float()
@@ -162,17 +166,17 @@ def main(args):
     D_2 = residual_model.Discriminator(1)
     D_2 = D_2.float()
 
+    G_12.apply(residual_model.weights_init_normal)
+    G_21.apply(residual_model.weights_init_normal)
+    D_1.apply(residual_model.weights_init_normal)
+    D_2.apply(residual_model.weights_init_normal)
+
     if torch.cuda.is_available():
         G_12 = G_12.cuda()
         G_21 = G_21.cuda()
         D_1 = D_1.cuda()
         D_2 = D_2.cuda()
     
-    G_12.weight_init(mean = 0.0, std = 0.02)
-    G_21.weight_init(mean = 0.0, std = 0.02)
-    D_1.weight_init(mean = 0.0, std = 0.02)
-    D_2.weight_init(mean = 0.0, std = 0.02)
-
     optimizer_G = torch.optim.Adam(
         list(G_12.parameters()) + list(G_21.parameters()), lr=args.lr, betas=(args.beta1, 0.999)
     )

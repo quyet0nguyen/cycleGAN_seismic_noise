@@ -1,6 +1,7 @@
 import torch.nn as nn
 import torch.nn.functional as F
 from torchsummary import summary
+import torch
 
 class ResidualBlock(nn.Module):
     def __init__(self, in_features):
@@ -91,6 +92,14 @@ class Discriminator(nn.Module):
         x =  self.model(x)
         # Average pooling and flatten
         return F.avg_pool2d(x, x.size()[2:]).view(x.size()[0], -1)
+
+def weights_init_normal(m):
+    classname = m.__class__.__name__
+    if classname.find('Conv') != -1:
+        torch.nn.init.normal(m.weight.data, 0.0, 0.02)
+    elif classname.find('BatchNorm2d') != -1:
+        torch.nn.init.normal(m.weight.data, 1.0, 0.02)
+        torch.nn.init.constant(m.bias.data, 0.0)
 
 if __name__ == "__main__":
     G12 = Generator(1,1,9)
