@@ -17,7 +17,7 @@ def generate_image_seismic(root_img, image_size, batch_size):
         y = random.randrange(root_img.shape[1]-image_size)
         z = random.randrange(root_img.shape[2])
 
-        X_train[_,:,:] = root_img[x:x+32, y:y+32,z]
+        X_train[_,:,:] = root_img[x:x+image_size, y:y+image_size,z]
     
     return X_train
 
@@ -26,8 +26,10 @@ def generate_image_noise(seismic_img, image_size, batch_size):
     #fill minimum number in dataset
     noised_train_data.fill(-5200)
     
+    noise_size = round(image_size / 5 * 4) 
+
     #generate noise
-    noised_train_data[:,:,:25] = seismic_img[:,:,:25]
+    noised_train_data[:,:,:noise_size] = seismic_img[:,:,:noise_size]
 
     return noised_train_data
 
