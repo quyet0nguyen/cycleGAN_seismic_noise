@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.autograd import Variable
+import random
 
 def deconv(c_in, c_out, k_size, stride = 2, pad = 1, bn = True): 
   """customize deconvolutional layer"""
@@ -146,3 +148,4 @@ if __name__ == "__main__":
     D_2 = D2(batch_size)
     print(G_12)
     print(D_1)
+

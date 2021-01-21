@@ -8,7 +8,7 @@ import residual_model
 import data
 from torch.utils.tensorboard import SummaryWriter
 
-def train(G_12, G_21, D_1, D_2, optimizer_G, optimizer_D, batch_size, num_epochs, X_train, noised_train_data, writer):
+def train(G_12, G_21, D_1, D_2, optimizer_G, optimizer_D, batch_size, num_epochs, X_train, noised_train_data, writer, num_iter):
     
     noised_train_data_iter = iter(noised_train_data)
     X_train_iter = iter(X_train)
@@ -38,7 +38,7 @@ def train(G_12, G_21, D_1, D_2, optimizer_G, optimizer_D, batch_size, num_epochs
         noised_train_data_iter = iter(noised_train_data)
         X_train_iter = iter(X_train)
 
-        for _ in tqdm(range(900)): #train in batch_size*900 img
+        for _ in tqdm(range(num_iter)): #train in batch_size*900 img
 
             noise_iter = noised_train_data_iter.next()[0] 
             noise = Variable(noise_iter)
@@ -109,12 +109,12 @@ def train(G_12, G_21, D_1, D_2, optimizer_G, optimizer_D, batch_size, num_epochs
             optimizer_G.step()
 
             print("d_real_loss:", d_real_loss.item()," d_seismic_loss:",d_seismic_loss.item()," d_noise_loss:", d_noise_loss.item()," d_fake_loss:", d_fake_loss.item()," g_loss:", g_loss.item())
-            writer.add_scalar("d_real_loss/train", d_real_loss.item(), _ + epoch * 938)
-            writer.add_scalar("d_seismic_loss/train", d_seismic_loss.item(), _ + epoch * 938)
-            writer.add_scalar("d_noise_loss/train", d_noise_loss.item(), _ + epoch * 938)
-            writer.add_scalar("d_fake_loss/train",d_fake_loss.item(), _ + epoch * 938)
-            writer.add_scalar("g_loss/train", g_loss.item(), _ + epoch * 938)
-            writer.add_scalar("epoch/train", epoch +1, _ + epoch * 938)
+            writer.add_scalar("d_real_loss/train", d_real_loss.item(), _ + epoch * num_iter)
+            writer.add_scalar("d_seismic_loss/train", d_seismic_loss.item(), _ + epoch * num_iter)
+            writer.add_scalar("d_noise_loss/train", d_noise_loss.item(), _ + epoch * num_iter)
+            writer.add_scalar("d_fake_loss/train",d_fake_loss.item(), _ + epoch * num_iter)
+            writer.add_scalar("g_loss/train", g_loss.item(), _ + epoch * num_iter)
+            writer.add_scalar("epoch/train", epoch +1, _ + epoch * num_iter)
 
         fake_noise = G_12(fixed_seismic.float())
         fake_seismic = G_21(fixed_noised.float())
@@ -142,34 +142,34 @@ def main(args):
     writer = SummaryWriter()
 
     ##=== run with model package ====#
-    # G_12 = model.G12(args.batch_size)
-    # G_12 = G_12.float()
-    # G_21 = model.G21(args.batch_size)
-    # G_21 = G_21.float()
-    # D_1 = model.D1(args.batch_size)
-    # D_1 = D_1.float()
-    # D_2 = model.D2(args.batch_size)
-    # D_2 = D_2.float()
-
-    # G_12.weight_init(mean = 0.0, std = 0.02)
-    # G_21.weight_init(mean = 0.0, std = 0.02)
-    # D_1.weight_init(mean = 0.0, std = 0.02)
-    # D_2.weight_init(mean = 0.0, std = 0.02)
-
-    ##===run with residual model ====#
-    G_12 = residual_model.Generator(1,1)
+    G_12 = model.G12(args.batch_size)
     G_12 = G_12.float()
-    G_21 = residual_model.Generator(1,1)
+    G_21 = model.G21(args.batch_size)
     G_21 = G_21.float()
-    D_1 = residual_model.Discriminator(1)
+    D_1 = model.D1(args.batch_size)
     D_1 = D_1.float()
-    D_2 = residual_model.Discriminator(1)
+    D_2 = model.D2(args.batch_size)
     D_2 = D_2.float()
 
-    G_12.apply(residual_model.weights_init_normal)
-    G_21.apply(residual_model.weights_init_normal)
-    D_1.apply(residual_model.weights_init_normal)
-    D_2.apply(residual_model.weights_init_normal)
+    G_12.weight_init(mean = 0.0, std = 0.02)
+    G_21.weight_init(mean = 0.0, std = 0.02)
+    D_1.weight_init(mean = 0.0, std = 0.02)
+    D_2.weight_init(mean = 0.0, std = 0.02)
+
+    ##===run with residual model ====#
+    # G_12 = residual_model.Generator(1,1)
+    # G_12 = G_12.float()
+    # G_21 = residual_model.Generator(1,1)
+    # G_21 = G_21.float()
+    # D_1 = residual_model.Discriminator(1)
+    # D_1 = D_1.float()
+    # D_2 = residual_model.Discriminator(1)
+    # D_2 = D_2.float()
+
+    # G_12.apply(residual_model.weights_init_normal)
+    # G_21.apply(residual_model.weights_init_normal)
+    # D_1.apply(residual_model.weights_init_normal)
+    # D_2.apply(residual_model.weights_init_normal)
 
     if torch.cuda.is_available():
         G_12 = G_12.cuda()
@@ -184,7 +184,7 @@ def main(args):
         list(D_1.parameters()) + list(D_2.parameters()), lr=args.lr, betas=(args.beta1, 0.999)
     )
 
-    X_train, noised_train_data = data.train_dataset(args.dir, args.batch_size, args.image_size)
+    X_train, noised_train_data = data.train_dataset(args.dir, args.batch_size, args.image_size, args.num_iter_train)
 
     #set label
     real_label = Variable(torch.ones(args.batch_size))
@@ -193,4 +193,4 @@ def main(args):
         real_label = real_label.cuda()
         fake_label = fake_label.cuda()
 
-    train(G_12, G_21, D_1, D_2, optimizer_G, optimizer_D, args.batch_size, args.num_epochs, X_train, noised_train_data, writer)
+    train(G_12, G_21, D_1, D_2, optimizer_G, optimizer_D, args.batch_size, args.num_epochs, X_train, noised_train_data, writer, args.num_iter_train)
