@@ -108,7 +108,7 @@ def train(G_12, G_21, D_1, D_2, optimizer_G, optimizer_D, batch_size, num_epochs
             g_loss.backward()
             optimizer_G.step()
 
-            print("d_real_loss:", d_real_loss.item()," d_seismic_loss:",d_seismic_loss.item()," d_noise_loss:", d_noise_loss.item()," d_fake_loss:", d_fake_loss.item()," g_loss:", g_loss.item())
+            #print("d_real_loss:", d_real_loss.item()," d_seismic_loss:",d_seismic_loss.item()," d_noise_loss:", d_noise_loss.item()," d_fake_loss:", d_fake_loss.item()," g_loss:", g_loss.item())
             writer.add_scalar("d_real_loss/train", d_real_loss.item(), _ + epoch * num_iter)
             writer.add_scalar("d_seismic_loss/train", d_seismic_loss.item(), _ + epoch * num_iter)
             writer.add_scalar("d_noise_loss/train", d_noise_loss.item(), _ + epoch * num_iter)
@@ -153,8 +153,8 @@ def main(args):
 
     G_12.weight_init(mean = 0.0, std = 0.02)
     G_21.weight_init(mean = 0.0, std = 0.02)
-    D_1.weight_init(mean = 0.0, std = 0.02)
-    D_2.weight_init(mean = 0.0, std = 0.02)
+    #D_1.weight_init(mean = 0.0, std = 0.02)
+    #D_2.weight_init(mean = 0.0, std = 0.02)
 
     ##===run with residual model ====#
     # G_12 = residual_model.Generator(1,1)

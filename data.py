@@ -5,7 +5,7 @@ import torch
 
 def load_dataset(link):
     data_train = np.load(link)
-    data_train = ((data_train + 5200) / (5200*2) ) * 255
+    #data_train = ((data_train + 5200) / (5200*2) ) * 255
     return data_train
 
 def generate_image_seismic(root_img, image_size, batch_size, num_iter):
@@ -25,7 +25,8 @@ def generate_image_seismic(root_img, image_size, batch_size, num_iter):
 def generate_image_noise(seismic_img, image_size, batch_size, num_iter):
     noised_train_data = np.zeros((batch_size*num_iter,image_size,image_size))
     #fill minimum number in dataset
-    
+    # noise_size = random.randrange(round((image_size/3)*2),image_size)
+    # noised_train_data[:,:,:noise_size] = seismic_img[:,:,:noise_size]
     for _ in range(batch_size*num_iter-1):
         for i in range(image_size):
             noise_size = random.randrange(round(image_size/3*2),image_size)
