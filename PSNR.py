@@ -12,10 +12,11 @@ class PSNR:
     @staticmethod
     def __call__(y_true, y_pred):
         max_val = max(torch.max(y_true), torch.max(y_pred))
+        print(max_val)
         mse = torch.mean((y_true - y_pred) ** 2)
         return 20 * torch.log10(float(max_val) / torch.sqrt(mse))
 
 if __name__ == '__main__':
     metric = PSNR()
     print(metric(torch.tensor([[2.,3.,5.,7.],[2.,5.,4.,1.]]), torch.tensor([[2.,3.,5.,1.],[2., 7., 3., 4.]])))
-    print(cv2.PSNR(np.array([[2.,3.,5.,7.],[2.,5.,4.,1.]]),np.array([[2.,3.,5.,1.],[2., 7., 3., 4.]])))
+    #print(cv2.PSNR(np.array([[2.,3.,5.,7.],[2.,5.,4.,1.]]),np.array([[2.,3.,5.,1.],[2., 7., 3., 4.]])))
