@@ -3,6 +3,7 @@ import torch
 import residual_model
 from argparse import ArgumentParser
 from torch.autograd import Variable
+import PSNR
 
 def get_args():
     parser = ArgumentParser(description='generate seismic image using cycleGAN')
@@ -47,7 +48,7 @@ def main():
     generate_seismic_image = G_21(test.float())
     generate_noise_image = G_12(noised.float())
 
-    loss = torch.nn.L1Loss()
+    loss = PSNR()
 
     estimate_loss_generate_seismic = loss(generate_seismic_image, test)
     estimate_loss_noise_seismic = loss(generate_noise_image, noised)
