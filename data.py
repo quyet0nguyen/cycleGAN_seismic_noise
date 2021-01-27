@@ -5,7 +5,8 @@ import torch
 
 def load_dataset(link):
     data_train = np.load(link)
-    #data_train = ((data_train + 5200) / (5200*2) ) * 255
+    max_val = max(abs(np.amax(data_train)), abs(np.amin(data_train)))
+    data_train = data_train / max_val
     return data_train
 
 def generate_image_seismic(root_img, image_size, batch_size, num_iter):
@@ -24,14 +25,12 @@ def generate_image_seismic(root_img, image_size, batch_size, num_iter):
 
 def generate_image_noise(seismic_img, image_size, batch_size, num_iter):
     noised_train_data = np.zeros((batch_size*num_iter,image_size,image_size))
+    noised_train_data[:,:,:] = seismic_img[:,:,:]
     #fill minimum number in dataset
-    # noise_size = random.randrange(round((image_size/3)*2),image_size)
-    # noised_train_data[:,:,:noise_size] = seismic_img[:,:,:noise_size]
-    for _ in range(batch_size*num_iter-1):
-        for i in range(image_size):
-            noise_size = random.randrange(round(image_size/3*2),image_size)
-            #generate noise
-            noised_train_data[_,i,:noise_size] = seismic_img[_,i,:noise_size]
+    size_noise = 2
+    ran_noise = random.randrange(noised_train_data.shape[1]-size_noise)
+    for _ in range(noised_train_data.shape[0]):
+      noised_train_data[_,:,ran_noise:ran_noise+size_noise] = np.zeros((noised_train_data.shape[1], size_noise))
 
     return noised_train_data
 
@@ -65,7 +64,7 @@ def train_dataset(dir, batch_size, image_size, num_iter):
     return seismic_img, noise_img
     
 if __name__ == "__main__":
-    dir = '../AiCrowdData/data_train/data.npy'
+    dir = '/content/AiCrowdData/data_train/data.npy'
     batch_size = 64
     image_size = 32
     num_iter = 900

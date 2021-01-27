@@ -139,7 +139,7 @@ def train(G_12, G_21, D_1, D_2, optimizer_G, optimizer_D, batch_size, num_epochs
 
 def main(args):
 
-    writer = SummaryWriter()
+    writer = SummaryWriter(log_dir='/content/cycleGAN_seismic_noise/runs')
 
     ##=== run with model package ====#
     G_12 = model.G12(args.batch_size)
