@@ -28,8 +28,8 @@ def generate_image_noise(seismic_img, image_size, batch_size, num_iter):
     noised_train_data[:,:,:] = seismic_img[:,:,:]
     #fill minimum number in dataset
     size_noise = 2
-    ran_noise = random.randrange(noised_train_data.shape[1]-size_noise)
     for _ in range(noised_train_data.shape[0]):
+      ran_noise = random.randrange(noised_train_data.shape[1]-size_noise)
       noised_train_data[_,:,ran_noise:ran_noise+size_noise] = np.zeros((noised_train_data.shape[1], size_noise))
 
     return noised_train_data
