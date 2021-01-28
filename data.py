@@ -7,12 +7,14 @@ def load_dataset(link):
     data_train = np.load(link)
     
     #== rerange of the input to 0, 1
-    max_val = np.amax(data_train)
-    min_val = np.amin(data_train)
-    data_train = (data_train - min_val)/ ( max_val - min_val)
+    # max_val = np.amax(data_train)
+    # min_val = np.amin(data_train)
+    # data_train = (data_train - min_val)/ ( max_val - min_val)
 
     #== normalize data
-    #mean  =  data_train.mean()
+    mean  =  np.mean(data_train)
+    std = np.std(data_train)
+    data_train = (data_train - mean) / std
 
     return data_train
 
@@ -33,11 +35,13 @@ def generate_image_seismic(root_img, image_size, batch_size, num_iter):
 def generate_image_noise(seismic_img, image_size, batch_size, num_iter):
     noised_train_data = np.zeros((batch_size*num_iter,image_size,image_size))
     noised_train_data[:,:,:] = seismic_img[:,:,:]
+    max_val = np.amax(noised_train_data)
+    min_val = np.amin(noised_train_data)
     #fill minimum number in dataset
-    size_noise = 2
     for _ in range(noised_train_data.shape[0]):
+      size_noise = random.randrange(2,10)
       ran_noise = random.randrange(noised_train_data.shape[1]-size_noise)
-      noised_train_data[_,:,ran_noise:ran_noise+size_noise] = np.zeros((noised_train_data.shape[1], size_noise))
+      noised_train_data[_,:,ran_noise:ran_noise+size_noise] = np.random.uniform(min_val,max_val,[noised_train_data.shape[1], size_noise])
 
     return noised_train_data
 

@@ -8,6 +8,7 @@ import residual_model
 import data
 import itertools
 from torch.utils.tensorboard import SummaryWriter
+from datetime import datetime
 
 def train(G_12, G_21, D_1, D_2, optimizer_G, optimizer_D_A, optimizer_D_B, lr_scheduler_G, lr_scheduler_D_A,
             lr_scheduler_D_B, batch_size, cur_epoch,num_epochs, A_data, B_data, writer, num_iter):
@@ -179,7 +180,7 @@ def train(G_12, G_21, D_1, D_2, optimizer_G, optimizer_D_A, optimizer_D_B, lr_sc
 
 def main(args):
 
-    writer = SummaryWriter()
+    writer = SummaryWriter(log_dir='/content/cycleGAN_seismic_noise/runs/'+ datetime.now().strftime('%b%d_%H-%M-%S'))
 
     G_12 = residual_model.Generator(1,1)
     G_21 = residual_model.Generator(1,1)
