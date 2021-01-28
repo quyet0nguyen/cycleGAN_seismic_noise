@@ -2,6 +2,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torchsummary import summary
 import torch
+from torch.autograd import Variable
+import random
 
 class ResidualBlock(nn.Module):
     def __init__(self, in_features):
