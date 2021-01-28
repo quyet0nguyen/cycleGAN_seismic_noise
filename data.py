@@ -5,8 +5,15 @@ import torch
 
 def load_dataset(link):
     data_train = np.load(link)
-    max_val = max(abs(np.amax(data_train)), abs(np.amin(data_train)))
-    data_train = data_train / max_val
+    
+    #== rerange of the input to 0, 1
+    max_val = np.amax(data_train)
+    min_val = np.amin(data_train)
+    data_train = (data_train - min_val)/ ( max_val - min_val)
+
+    #== normalize data
+    #mean  =  data_train.mean()
+
     return data_train
 
 def generate_image_seismic(root_img, image_size, batch_size, num_iter):
