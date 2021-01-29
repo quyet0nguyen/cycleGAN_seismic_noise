@@ -150,6 +150,9 @@ def train(G_12, G_21, D_1, D_2, optimizer_G, optimizer_D_A, optimizer_D_B, lr_sc
             writer.add_scalar("loss_G_GAN/train", (g_loss_12 + g_loss_21), _ + epoch * num_iter)
             writer.add_scalar("loss_G_cycle/train",(loss_cycle_121+ loss_cycle_212), _ + epoch * num_iter)
             writer.add_scalar("loss_D/train", (loss_D_1+loss_D_2), _ + epoch * num_iter)
+            wandb.log({ "loss_G/train": loss_G, "loss_G_identity/train": (loss_identity_A+loss_identity_B), "loss_G_GAN/train": (g_loss_12 + g_loss_21),
+            "loss_G_cycle/train": (loss_cycle_121+ loss_cycle_212), "loss_D/train": (loss_D_1+loss_D_2)})
+
 
         fake_B = G_12(fixed_A.float())
         fake_A = G_21(fixed_B.float())
@@ -157,10 +160,12 @@ def train(G_12, G_21, D_1, D_2, optimizer_G, optimizer_D_A, optimizer_D_B, lr_sc
         grid = vutils.make_grid(fake_A, nrow=8, normalize=True)
         writer.add_image("generate images A", grid, epoch)
         img_list_A.append(wandb.Image(grid))
+        wandb.log({ "Generated Images A": img_list_A })
 
         grid = vutils.make_grid(fake_B, nrow=8, normalize=True)
         writer.add_image("generate images B", grid, epoch)
         img_list_B.append(wandb.Image(grid))
+        wandb.log({ "Generated Images B": img_list_B })
 
         #update learning rate 
         lr_scheduler_G.step()

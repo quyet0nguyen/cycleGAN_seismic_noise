@@ -1,0 +1,9 @@
+diff --git a/__pycache__/data.cpython-36.pyc b/__pycache__/data.cpython-36.pyc
+index 00937e4..c1c89f0 100644
+Binary files a/__pycache__/data.cpython-36.pyc and b/__pycache__/data.cpython-36.pyc differ
+diff --git a/__pycache__/residual_model.cpython-36.pyc b/__pycache__/residual_model.cpython-36.pyc
+index f1b068b..43a6b30 100644
+Binary files a/__pycache__/residual_model.cpython-36.pyc and b/__pycache__/residual_model.cpython-36.pyc differ
+diff --git a/__pycache__/train_residualmodel.cpython-36.pyc b/__pycache__/train_residualmodel.cpython-36.pyc
+index 1b4e896..c1ade4b 100644
+Binary files a/__pycache__/train_residualmodel.cpython-36.pyc and b/__pycache__/train_residualmodel.cpython-36.pyc differ

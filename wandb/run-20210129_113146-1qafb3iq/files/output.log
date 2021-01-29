@@ -1,0 +1,23 @@
+/content/cycleGAN_seismic_noise/residual_model.py:99: UserWarning: nn.init.normal is now deprecated in favor of nn.init.normal_.
+  torch.nn.init.normal(m.weight.data, 0.0, 0.02)
+/content/cycleGAN_seismic_noise/residual_model.py:101: UserWarning: nn.init.normal is now deprecated in favor of nn.init.normal_.
+  torch.nn.init.normal(m.weight.data, 1.0, 0.02)
+/content/cycleGAN_seismic_noise/residual_model.py:102: UserWarning: nn.init.constant is now deprecated in favor of nn.init.constant_.
+  torch.nn.init.constant(m.bias.data, 0.0)
+tcmalloc: large alloc 1856593920 bytes == 0xac298000 @  0x7ff52a1841e7 0x7ff4da78b41e 0x7ff4da7dfe2c 0x7ff4da7e0a5f 0x7ff4da882410 0x50a4a5 0x50cc96 0x507be4 0x509900 0x50a2fd 0x50cc96 0x507be4 0x509900 0x50a2fd 0x50beb4 0x5095c8 0x50a2fd 0x50beb4 0x5095c8 0x50a2fd 0x50beb4 0x5095c8 0x50a2fd 0x50beb4 0x5095c8 0x50a2fd 0x50beb4 0x507be4 0x50ad03 0x634e72 0x634f27
+tcmalloc: large alloc 1856593920 bytes == 0x11b5a8000 @  0x7ff52a1841e7 0x7ff4da78b41e 0x7ff4da7dbc2b 0x7ff4da7dbcc8 0x7ff4da9c036f 0x7ff4da9c1d9d 0x7ff4da9c3476 0x5a48ec 0x5a4fb8 0x7ff4da8a203b 0x59c9f0 0x50cb2f 0x5095c8 0x50a2fd 0x50beb4 0x5095c8 0x50a2fd 0x50beb4 0x5095c8 0x50a2fd 0x50beb4 0x5095c8 0x50a2fd 0x50beb4 0x507be4 0x50ad03 0x634e72 0x634f27 0x6386df 0x639281 0x4b0dc0
+  0%|          | 0/900 [00:00<?, ?it/s]  0%|          | 1/900 [00:00<11:07,  1.35it/s]  0%|          | 2/900 [00:01<10:55,  1.37it/s]  0%|          | 3/900 [00:02<10:47,  1.39it/s]  0%|          | 4/900 [00:02<10:41,  1.40it/s]  1%|          | 5/900 [00:03<10:36,  1.41it/s]  1%|          | 6/900 [00:04<10:34,  1.41it/s]  1%|          | 7/900 [00:04<10:31,  1.41it/s]  1%|          | 8/900 [00:05<10:28,  1.42it/s]  1%|          | 9/900 [00:06<10:27,  1.42it/s]  1%|          | 10/900 [00:07<10:26,  1.42it/s]  1%|          | 11/900 [00:07<10:25,  1.42it/s]  1%|▏         | 12/900 [00:08<10:24,  1.42it/s]  1%|▏         | 13/900 [00:09<10:23,  1.42it/s]  2%|▏         | 14/900 [00:09<10:22,  1.42it/s]  2%|▏         | 15/900 [00:10<10:21,  1.42it/s]  2%|▏         | 16/900 [00:11<10:21,  1.42it/s]  2%|▏         | 17/900 [00:11<10:20,  1.42it/s]  2%|▏         | 18/900 [00:12<10:19,  1.42it/s]  2%|▏         | 19/900 [00:13<10:18,  1.42it/s]  2%|▏         | 20/900 [00:14<10:17,  1.42it/s]  2%|▏         | 21/900 [00:14<10:16,  1.42it/s]  2%|▏         | 22/900 [00:15<10:16,  1.42it/s]  3%|▎         | 23/900 [00:16<10:15,  1.43it/s]  3%|▎         | 24/900 [00:16<10:14,  1.43it/s]  3%|▎         | 25/900 [00:17<10:13,  1.43it/s]Traceback (most recent call last):
+  File "main.py", line 25, in <module>
+    main()
+  File "main.py", line 22, in main
+    train_residualmodel.main(args)
+  File "/content/cycleGAN_seismic_noise/train_residualmodel.py", line 249, in main
+    cur_epoch, args.num_epochs, A_data, B_data, writer, args.num_iter_train)
+  File "/content/cycleGAN_seismic_noise/train_residualmodel.py", line 73, in train
+    optimizer_G.zero_grad()
+  File "/usr/local/lib/python3.6/dist-packages/torch/optim/optimizer.py", line 184, in zero_grad
+    if p.grad is not None:
+  File "/usr/local/lib/python3.6/dist-packages/torch/tensor.py", line 933, in grad
+    @property
+KeyboardInterrupt
+  3%|▎         | 25/900 [00:17<10:15,  1.42it/s]
