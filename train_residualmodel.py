@@ -9,6 +9,7 @@ import data
 import itertools
 from torch.utils.tensorboard import SummaryWriter
 from datetime import datetime
+import wandb
 
 def train(G_12, G_21, D_1, D_2, optimizer_G, optimizer_D_A, optimizer_D_B, lr_scheduler_G, lr_scheduler_D_A,
             lr_scheduler_D_B, batch_size, cur_epoch,num_epochs, A_data, B_data, writer, num_iter):
@@ -24,6 +25,8 @@ def train(G_12, G_21, D_1, D_2, optimizer_G, optimizer_D_A, optimizer_D_B, lr_sc
     fixed_B = Variable(B_data_iter.next()[0])
     fixed_A = Variable(A_data_iter.next()[0])
 
+    img_list_A = []
+    img_list_B = []
 
     if torch.cuda.is_available():
         fixed_B = fixed_B.cuda()
@@ -31,9 +34,11 @@ def train(G_12, G_21, D_1, D_2, optimizer_G, optimizer_D_A, optimizer_D_B, lr_sc
 
     grid = vutils.make_grid(fixed_A, nrow=8, normalize=True)
     writer.add_image('fixed images A', grid, 0)
+    img_list_A.append(wandb.Image(grid))
 
     grid = vutils.make_grid(fixed_B, nrow=8, normalize=True)
     writer.add_image('fixed images B', grid, 0)
+    img_list_B.append(wandb.Image(grid))
 
     target_real = Variable(torch.Tensor(batch_size).fill_(1.0), requires_grad=False)
     target_fake = Variable(torch.Tensor(batch_size).fill_(0.0), requires_grad=False)
@@ -151,36 +156,38 @@ def train(G_12, G_21, D_1, D_2, optimizer_G, optimizer_D_A, optimizer_D_B, lr_sc
 
         grid = vutils.make_grid(fake_A, nrow=8, normalize=True)
         writer.add_image("generate images A", grid, epoch)
+        img_list_A.append(wandb.Image(grid))
 
         grid = vutils.make_grid(fake_B, nrow=8, normalize=True)
         writer.add_image("generate images B", grid, epoch)
+        img_list_B.append(wandb.Image(grid))
 
         #update learning rate 
         lr_scheduler_G.step()
         lr_scheduler_D_A.step()
         lr_scheduler_D_B.step()
 
-        if epoch % 10 == 0:
+        name = 'state_dict_' + str(epoch) + '_.pth'
 
-            name = 'state_dict_' + str(epoch) + '_.pth'
-
-            torch.save({"G_12_state_dict": G_12.state_dict(),
-                    "G_21_state_dict": G_21.state_dict(),
-                    "D_1_state_dict": D_1.state_dict(),
-                    "D_2_state_dict": D_2.state_dict(),
-                    "optimizer_G": optimizer_G.state_dict(),
-                    "optimizer_D_A" : optimizer_D_A.state_dict(),
-                    "optimizer_D_B" : optimizer_D_B.state_dict(),
-                    "lr_scheduler_G" : lr_scheduler_G.state_dict(),
-                    "lr_scheduler_D_A" : lr_scheduler_D_A.state_dict(),
-                    "lr_scheduler_D_B" : lr_scheduler_D_B.state_dict(),
-                    "epoch" : epoch,
-            },name)
-
+        torch.save({"G_12_state_dict": G_12.state_dict(),
+                "G_21_state_dict": G_21.state_dict(),
+                "D_1_state_dict": D_1.state_dict(),
+                "D_2_state_dict": D_2.state_dict(),
+                "optimizer_G": optimizer_G.state_dict(),
+                "optimizer_D_A" : optimizer_D_A.state_dict(),
+                "optimizer_D_B" : optimizer_D_B.state_dict(),
+                "lr_scheduler_G" : lr_scheduler_G.state_dict(),
+                "lr_scheduler_D_A" : lr_scheduler_D_A.state_dict(),
+                "lr_scheduler_D_B" : lr_scheduler_D_B.state_dict(),
+                "epoch" : epoch,
+        },name)
+        wandb.save(name)
 
 def main(args):
 
     writer = SummaryWriter(log_dir='/content/cycleGAN_seismic_noise/runs/'+ datetime.now().strftime('%b%d_%H-%M-%S'))
+    wandb.login()
+    wandb.init(project="cycleGAN-mnist-svhn-transfer")
 
     G_12 = residual_model.Generator(1,1)
     G_21 = residual_model.Generator(1,1)
