@@ -72,15 +72,19 @@ class Discriminator(nn.Module):
 
         # A bunch of convolutions one after another
         model = [   nn.Conv2d(input_nc, 64, 4, stride=2, padding=1),
+                    nn.BatchNorm2d(64),
                     nn.LeakyReLU(0.2, inplace=True) ]
 
-        model += [  nn.utils.spectral_norm(nn.Conv2d(64, 128, 4, stride=2, padding=1)),
+        model += [  nn.Conv2d(64, 128, 4, stride=2, padding=1),
+                    nn.BatchNorm2d(128),
                     nn.LeakyReLU(0.2, inplace=True) ]
 
-        model += [  nn.utils.spectral_norm(nn.Conv2d(128, 256, 4, stride=2, padding=1)),
+        model += [  nn.Conv2d(128, 256, 4, stride=2, padding=1),
+                    nn.BatchNorm2d(256),
                     nn.LeakyReLU(0.2, inplace=True) ]
 
-        model += [  nn.utils.spectral_norm(nn.Conv2d(256, 512, 4, padding=1)),
+        model += [  nn.Conv2d(256, 512, 4, padding=1),
+                    nn.BatchNorm2d(512),
                     nn.LeakyReLU(0.2, inplace=True) ]
 
         # FCN classification layer

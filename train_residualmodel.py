@@ -192,7 +192,8 @@ def main(args):
 
     writer = SummaryWriter(log_dir='/content/cycleGAN_seismic_noise/runs/'+ datetime.now().strftime('%b%d_%H-%M-%S'))
     wandb.login()
-    wandb.init(project="cycleGAN-mnist-svhn-transfer")
+    wandb.init(project="cycleGAN_seismic_noise")
+    wandb.wath_called = False
 
     G_12 = residual_model.Generator(1,1)
     G_21 = residual_model.Generator(1,1)
