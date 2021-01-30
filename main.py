@@ -1,6 +1,7 @@
 import os
 from argparse import ArgumentParser
 import train_residualmodel
+import train
  
 #get arguments from commandline
 def get_args():
@@ -19,7 +20,7 @@ def get_args():
 def main():
     
     args = get_args()
-    train_residualmodel.main(args)
+    train.main(args)
 
 if __name__ == "__main__":
     main()

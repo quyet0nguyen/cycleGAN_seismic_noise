@@ -190,12 +190,11 @@ def train(G_12, G_21, D_1, D_2, optimizer_G, optimizer_D_A, optimizer_D_B, lr_sc
     
 
 def main(args):
-
     writer = SummaryWriter(log_dir='/content/cycleGAN_seismic_noise/runs/'+ datetime.now().strftime('%b%d_%H-%M-%S'))
     wandb.login()
     wandb.init(project="cycleGAN_seismic_noise")
     wandb.wath_called = False
-    
+
     ##=== run with model package ====#
     G_12 = model.G12(args.batch_size)
     G_12 = G_12.float()
@@ -211,41 +210,51 @@ def main(args):
     #D_1.weight_init(mean = 0.0, std = 0.02)
     #D_2.weight_init(mean = 0.0, std = 0.02)
 
-    ##===run with residual model ====#
-    # G_12 = residual_model.Generator(1,1)
-    # G_12 = G_12.float()
-    # G_21 = residual_model.Generator(1,1)
-    # G_21 = G_21.float()
-    # D_1 = residual_model.Discriminator(1)
-    # D_1 = D_1.float()
-    # D_2 = residual_model.Discriminator(1)
-    # D_2 = D_2.float()
-
-    # G_12.apply(residual_model.weights_init_normal)
-    # G_21.apply(residual_model.weights_init_normal)
-    # D_1.apply(residual_model.weights_init_normal)
-    # D_2.apply(residual_model.weights_init_normal)
-
     if torch.cuda.is_available():
         G_12 = G_12.cuda()
         G_21 = G_21.cuda()
         D_1 = D_1.cuda()
         D_2 = D_2.cuda()
     
+    #=== optimizer & learning rate schedulers
     optimizer_G = torch.optim.Adam(
-        list(G_12.parameters()) + list(G_21.parameters()), lr=args.lr, betas=(args.beta1, 0.999)
+        itertools.chain(G_12.parameters(), G_21.parameters()), lr=args.lr, 
+        betas=(args.beta1, 0.999)
     )
-    optimizer_D = torch.optim.Adam(
-        list(D_1.parameters()) + list(D_2.parameters()), lr=args.lr, betas=(args.beta1, 0.999)
+    optimizer_D_A = torch.optim.Adam(D_1.parameters(), lr=args.lr, 
+        betas=(args.beta1, 0.999)
+    )
+    optimizer_D_B = torch.optim.Adam(D_1.parameters(), lr=args.lr, 
+        betas=(args.beta1, 0.999)
     )
 
-    X_train, noised_train_data = data.train_dataset(args.dir, args.batch_size, args.image_size, args.num_iter_train)
+    lr_scheduler_G = torch.optim.lr_scheduler.LambdaLR(optimizer_G, lr_lambda=residual_model.LambdaLR(args.num_epochs,0, round(args.num_epochs/2)).step)
+    lr_scheduler_D_A = torch.optim.lr_scheduler.LambdaLR(optimizer_D_A, lr_lambda=residual_model.LambdaLR(args.num_epochs,0, round(args.num_epochs/2)).step)
+    lr_scheduler_D_B = torch.optim.lr_scheduler.LambdaLR(optimizer_D_B, lr_lambda=residual_model.LambdaLR(args.num_epochs,0, round(args.num_epochs/2)).step)
 
-    #set label
-    real_label = Variable(torch.ones(args.batch_size))
-    fake_label = Variable(torch.zeros(args.batch_size))
-    if torch.cuda.is_available():
-        real_label = real_label.cuda()
-        fake_label = fake_label.cuda()
+    # load seismic dataset
+    A_data, B_data = data.train_dataset(args.dir, args.batch_size, args.image_size, args.num_iter_train)
+    # load apple2orange
+    # A_data = crack_dataset.dataloader(args,"train",'crack')
+    # B_data = crack_dataset.dataloader(args,"train",'origin')
 
-    train(G_12, G_21, D_1, D_2, optimizer_G, optimizer_D, args.batch_size, args.num_epochs, X_train, noised_train_data, writer, args.num_iter_train)
+    model_state = args.state_dict
+
+    if model_state!= "":
+        checkpoint = torch.load(model_state)
+        G_12.load_state_dict(checkpoint['G_12_state_dict'])
+        G_21.load_state_dict(checkpoint['G_21_state_dict'])
+        D_1.load_state_dict(checkpoint['D_1_state_dict'])
+        D_2.load_state_dict(checkpoint['D_2_state_dict'])
+        optimizer_G.load_state_dict(checkpoint['optimizer_G'])
+        optimizer_D_A.load_state_dict(checkpoint['optimizer_D_A'])
+        optimizer_D_B.load_state_dict(checkpoint['optimizer_D_B'])
+        lr_scheduler_G.load_state_dict(checkpoint['lr_scheduler_G'])
+        lr_scheduler_D_A.load_state_dict(checkpoint['lr_scheduler_D_A'])
+        lr_scheduler_D_B.load_state_dict(checkpoint['lr_scheduler_D_B'])
+        cur_epoch = checkpoint['epoch']
+    else:
+        cur_epoch = 0
+
+    train(G_12, G_21, D_1, D_2, optimizer_G, optimizer_D_A, optimizer_D_B, lr_scheduler_G, lr_scheduler_D_A, lr_scheduler_D_B, args.batch_size, 
+        cur_epoch, args.num_epochs, A_data, B_data, writer, args.num_iter_train)
