@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
+from torchsummary import summary
 import random
 
 def deconv(c_in, c_out, k_size, stride = 2, pad = 1, bn = True): 
@@ -99,10 +100,11 @@ class Discriminator(nn.Module):
   """
   def __init__(self, conv_dim):
     super(Discriminator, self).__init__()
-    self.conv1 = nn.Conv2d(1, conv_dim, 4, bias = False)
-    self.conv2 = nn.utils.spectral_norm(nn.Conv2d(conv_dim, conv_dim*2, 4, bias = False))
-    self.conv3 = nn.utils.spectral_norm(nn.Conv2d(conv_dim*2, conv_dim*4, 4, bias = False))
-    self.fc = nn.utils.spectral_norm(nn.Conv2d(conv_dim*4, 1, 4, 1, 0,bias = False))
+    self.conv1 = nn.Conv2d(1, conv_dim, 4, 2, 1, bias = False)
+    self.conv2 = nn.utils.spectral_norm(nn.Conv2d(conv_dim, conv_dim*2, 4, 2, 1, bias = False))
+    self.conv3 = nn.utils.spectral_norm(nn.Conv2d(conv_dim*2, conv_dim*4, 4, 2, 1, bias = False))
+    self.conv4 = nn.utils.spectral_norm(nn.Conv2d(conv_dim*4, conv_dim*8, 4, 1, 0, bias = False))
+    self.fc = nn.utils.spectral_norm(nn.Conv2d(conv_dim*8, 1, 4, 1, 0,bias = False))
   
   # weight_init
   def weight_init(self, mean, std):
@@ -113,15 +115,13 @@ class Discriminator(nn.Module):
     out = F.leaky_relu(self.conv1(x), 0.05)
     out = F.leaky_relu(self.conv2(out), 0.05)
     out = F.leaky_relu(self.conv3(out), 0.05)
+    out = F.leaky_relu(self.conv4(out), 0.05)
     out = self.fc(out).squeeze() 
     return out
 
 if __name__ == "__main__":
-    batch_size = 64
-    G_12 = G12(batch_size)
-    G_21 = G21(batch_size)
-    D_1 = D1(batch_size)
-    D_2 = D2(batch_size)
-    print(G_12)
-    print(D_1)
+    G12 = Generator(64)
+    print(summary(G12,(1,64,64)))
+    D1 = Discriminator(64)
+    print(summary(D1,(1,64,64)))
 
