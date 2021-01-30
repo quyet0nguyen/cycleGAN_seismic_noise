@@ -3,7 +3,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 import random
-from spectral_norm import SpectralNorm
 
 def deconv(c_in, c_out, k_size, stride = 2, pad = 1, bn = True): 
   """customize deconvolutional layer"""
@@ -103,10 +102,10 @@ class D1(nn.Module):
   """Discriminator for mnist"""
   def __init__(self, conv_dim):
     super(D1, self).__init__()
-    self.conv1 = SpectralNorm(nn.Conv2d(1, conv_dim, 4, bias = False))
-    self.conv2 = SpectralNorm(nn.Conv2d(conv_dim, conv_dim*2, 4, bias = False))
-    self.conv3 = SpectralNorm(nn.Conv2d(conv_dim*2, conv_dim*4, 4, bias = False))
-    self.fc = SpectralNorm(nn.Conv2d(conv_dim*4, 1, 4, 1, 0,bias = False))
+    self.conv1 = nn.Conv2d(1, conv_dim, 4, bias = False)
+    self.conv2 = nn.utils.spectral_norm(nn.Conv2d(conv_dim, conv_dim*2, 4, bias = False))
+    self.conv3 = nn.utils.spectral_norm(nn.Conv2d(conv_dim*2, conv_dim*4, 4, bias = False))
+    self.fc = nn.utils.spectral_norm(nn.Conv2d(conv_dim*4, 1, 4, 1, 0,bias = False))
   
   # weight_init
   def weight_init(self, mean, std):
