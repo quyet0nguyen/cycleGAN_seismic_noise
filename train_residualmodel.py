@@ -229,9 +229,6 @@ def main(args):
 
     # load seismic dataset
     A_data, B_data = data.train_dataset(args.dir, args.batch_size, args.image_size, args.num_iter_train)
-    # load apple2orange
-    # A_data = crack_dataset.dataloader(args,"train",'crack')
-    # B_data = crack_dataset.dataloader(args,"train",'origin')
 
     model_state = args.state_dict
 

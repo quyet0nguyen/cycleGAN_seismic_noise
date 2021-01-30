@@ -5,7 +5,15 @@ from torch.autograd import Variable
 import random
 
 def deconv(c_in, c_out, k_size, stride = 2, pad = 1, bn = True): 
-  """customize deconvolutional layer"""
+  """customize deconvolutional layer. Using block (deconv, batch norm)
+     args: 
+     - c_in: channels in
+     - c_out: channels out
+     - k_size: kernel size
+     - stride: stride
+     - pad : padding
+     - bn : batch normalization
+  """
   layers = []
   layers.append(nn.ConvTranspose2d(c_in, c_out, k_size, stride, pad, bias=False))
   if bn:
@@ -13,7 +21,15 @@ def deconv(c_in, c_out, k_size, stride = 2, pad = 1, bn = True):
   return nn.Sequential(*layers)
 
 def conv(c_in, c_out, k_size, stride = 2, pad = 1, bn = True):
-  """customize convolutional layer"""
+  """customize convolutional layer. Using block (conv, batch norm)
+     args: 
+     - c_in: channels in
+     - c_out: channels out
+     - k_size: kernel size
+     - stride: stride
+     - pad : padding
+     - bn : batch normalization  
+  """
   layers = []
   layers.append(nn.Conv2d(c_in, c_out, k_size, stride, pad, bias = False))
   if bn:
@@ -21,14 +37,25 @@ def conv(c_in, c_out, k_size, stride = 2, pad = 1, bn = True):
   return nn.Sequential(*layers)
 
 def normal_init(m, mean = 0.0, std = 0.02):
-    if isinstance(m, nn.ConvTranspose2d) or isinstance(m, nn.Conv2d):
-        m.weight.data.normal_(mean, std)
-        if m.bias:
-          m.bias.data.zero_()
+  """ initial weight for model.
+      args: 
+      - m : model
+      - mean: mean weight
+      - std: standard deviation weight
+  """
+  if isinstance(m, nn.ConvTranspose2d) or isinstance(m, nn.Conv2d):
+      m.weight.data.normal_(mean, std)
+      if m.bias:
+        m.bias.data.zero_()
 
-class G12(nn.Module):
+class Generator(nn.Module):
+  """Generator model. Using 3 main block: encoding, residual and decoding. Using tanh
+      as the activation function for image output.
+      args: 
+      - conv_dim : number of base channels to be multiplied.
+  """
   def __init__(self, conv_dim):
-    super(G12, self).__init__()
+    super(Generator, self).__init__()
     #encoding blocks
     self.conv1 = conv(1, conv_dim, 4)
     self.conv2 = conv(conv_dim, conv_dim*2, 4)
@@ -62,46 +89,16 @@ class G12(nn.Module):
     
     return out
 
-class G21(nn.Module):
-  def __init__(self, conv_dim):
-    super(G21, self).__init__()
-
-    #encoding blocks
-    self.conv1 = conv(1, conv_dim, 4)
-    self.conv2 = conv(conv_dim, conv_dim*2, 4)
-    self.conv3 = conv(conv_dim*2, conv_dim*4, 4)
-
-    #residual blocks
-    self.conv4 = conv(conv_dim*4, conv_dim*4, 3, 1, 1)
-    self.conv5 = conv(conv_dim*4, conv_dim*4, 3, 1, 1)
-
-    #decoding blocks
-    self.deconv1 = deconv(conv_dim*4, conv_dim*2, 4)
-    self.deconv2 = deconv(conv_dim*2, conv_dim, 4)
-    self.deconv3 = deconv(conv_dim, 1, 4, bn = False)
-  
-  # weight_init
-  def weight_init(self, mean, std):
-      for m in self.children():
-        m.apply(normal_init)
-
-  def forward(self, x):
-    out = F.leaky_relu(self.conv1(x), 0.05)
-    out = F.leaky_relu(self.conv2(out), 0.05)
-    out = F.leaky_relu(self.conv3(out), 0.05)
+class Discriminator(nn.Module):
+  """Discriminator model: using 1 block (conv,leaky_relu) as input 
+      and 3 block (conv,spectral_norm,leaky_relu) as hidden layer. 
+      Output is a matrix image. For discrminator do not using tanh or any activation function
     
-    out = F.leaky_relu(self.conv4(out), 0.05)
-    out = F.leaky_relu(self.conv5(out), 0.05)
-
-    out = F.leaky_relu(self.deconv1(out), 0.05)
-    out = F.leaky_relu(self.deconv2(out), 0.05)
-    out = F.tanh(self.deconv3(out))
-    return out
-
-class D1(nn.Module):
-  """Discriminator for mnist"""
+    args:
+      - conv_dim: number of base channels to be multiplied.
+  """
   def __init__(self, conv_dim):
-    super(D1, self).__init__()
+    super(Discriminator, self).__init__()
     self.conv1 = nn.Conv2d(1, conv_dim, 4, bias = False)
     self.conv2 = nn.utils.spectral_norm(nn.Conv2d(conv_dim, conv_dim*2, 4, bias = False))
     self.conv3 = nn.utils.spectral_norm(nn.Conv2d(conv_dim*2, conv_dim*4, 4, bias = False))
@@ -117,27 +114,6 @@ class D1(nn.Module):
     out = F.leaky_relu(self.conv2(out), 0.05)
     out = F.leaky_relu(self.conv3(out), 0.05)
     out = self.fc(out).squeeze() 
-    return out
-
-class D2(nn.Module):
-  """Discriminator for svhn"""
-  def __init__(self, conv_dim):
-    super(D2, self).__init__()
-    self.conv1 = SpectralNorm(nn.Conv2d(1, conv_dim, 4, bias = False))
-    self.conv2 = SpectralNorm(nn.Conv2d(conv_dim, conv_dim*2, 4, bias = False))
-    self.conv3 = SpectralNorm(nn.Conv2d(conv_dim*2, conv_dim*4, 4, bias = False))
-    self.fc = SpectralNorm(nn.Conv2d(conv_dim*4, 1, 4, 1, 0,bias = False))
-  
-  # weight_init
-  def weight_init(self, mean, std):
-      for m in self.children():
-        m.apply(normal_init)
-
-  def forward(self, x):
-    out = F.leaky_relu(self.conv1(x), 0.05)
-    out = F.leaky_relu(self.conv2(out), 0.05)
-    out = F.leaky_relu(self.conv3(out), 0.05)
-    out = self.fc(out).squeeze()
     return out
 
 if __name__ == "__main__":

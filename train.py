@@ -7,9 +7,10 @@ import torchvision.utils as vutils
 import residual_model
 import data
 import itertools
-from torch.utils.tensorboard import SummaryWriter
+#from torch.utils.tensorboard import SummaryWriter
 from datetime import datetime
 import wandb
+import model
 
 def train(G_12, G_21, D_1, D_2, optimizer_G, optimizer_D_A, optimizer_D_B, lr_scheduler_G, lr_scheduler_D_A,
             lr_scheduler_D_B, batch_size, cur_epoch,num_epochs, A_data, B_data, writer, num_iter):
@@ -33,11 +34,11 @@ def train(G_12, G_21, D_1, D_2, optimizer_G, optimizer_D_A, optimizer_D_B, lr_sc
         fixed_A = fixed_A.cuda()
 
     grid = vutils.make_grid(fixed_A, nrow=8, normalize=True)
-    writer.add_image('fixed images A', grid, 0)
+    #writer.add_image('fixed images A', grid, 0)
     img_list_A.append(wandb.Image(grid))
 
     grid = vutils.make_grid(fixed_B, nrow=8, normalize=True)
-    writer.add_image('fixed images B', grid, 0)
+    #writer.add_image('fixed images B', grid, 0)
     img_list_B.append(wandb.Image(grid))
 
     target_real = Variable(torch.Tensor(batch_size).fill_(1.0), requires_grad=False)
@@ -145,11 +146,11 @@ def train(G_12, G_21, D_1, D_2, optimizer_G, optimizer_D_A, optimizer_D_B, lr_sc
             optimizer_D_B.step()
 
             ################################
-            writer.add_scalar("loss_G/train", loss_G, _ + epoch * num_iter)
-            writer.add_scalar("loss_G_identity/train", (loss_identity_A+loss_identity_B), _ + epoch * num_iter)
-            writer.add_scalar("loss_G_GAN/train", (g_loss_12 + g_loss_21), _ + epoch * num_iter)
-            writer.add_scalar("loss_G_cycle/train",(loss_cycle_121+ loss_cycle_212), _ + epoch * num_iter)
-            writer.add_scalar("loss_D/train", (loss_D_1+loss_D_2), _ + epoch * num_iter)
+            # writer.add_scalar("loss_G/train", loss_G, _ + epoch * num_iter)
+            # writer.add_scalar("loss_G_identity/train", (loss_identity_A+loss_identity_B), _ + epoch * num_iter)
+            # writer.add_scalar("loss_G_GAN/train", (g_loss_12 + g_loss_21), _ + epoch * num_iter)
+            # writer.add_scalar("loss_G_cycle/train",(loss_cycle_121+ loss_cycle_212), _ + epoch * num_iter)
+            # writer.add_scalar("loss_D/train", (loss_D_1+loss_D_2), _ + epoch * num_iter)
             wandb.log({ "loss_G/train": loss_G, "loss_G_identity/train": (loss_identity_A+loss_identity_B), "loss_G_GAN/train": (g_loss_12 + g_loss_21),
             "loss_G_cycle/train": (loss_cycle_121+ loss_cycle_212), "loss_D/train": (loss_D_1+loss_D_2)})
 
@@ -158,12 +159,12 @@ def train(G_12, G_21, D_1, D_2, optimizer_G, optimizer_D_A, optimizer_D_B, lr_sc
         fake_A = G_21(fixed_B.float())
 
         grid = vutils.make_grid(fake_A, nrow=8, normalize=True)
-        writer.add_image("generate images A", grid, epoch)
+        #writer.add_image("generate images A", grid, epoch)
         img_list_A.append(wandb.Image(grid))
         wandb.log({ "Generated Images A": img_list_A })
 
         grid = vutils.make_grid(fake_B, nrow=8, normalize=True)
-        writer.add_image("generate images B", grid, epoch)
+        #writer.add_image("generate images B", grid, epoch)
         img_list_B.append(wandb.Image(grid))
         wandb.log({ "Generated Images B": img_list_B })
 
@@ -190,25 +191,22 @@ def train(G_12, G_21, D_1, D_2, optimizer_G, optimizer_D_A, optimizer_D_B, lr_sc
     
 
 def main(args):
-    writer = SummaryWriter(log_dir='/content/cycleGAN_seismic_noise/runs/'+ datetime.now().strftime('%b%d_%H-%M-%S'))
+    #writer = SummaryWriter(log_dir='/content/cycleGAN_seismic_noise/runs/'+ datetime.now().strftime('%b%d_%H-%M-%S'))
+    writer = ""
     wandb.login()
     wandb.init(project="cycleGAN_seismic_noise")
     wandb.wath_called = False
 
     ##=== run with model package ====#
-    G_12 = model.G12(args.batch_size)
-    G_12 = G_12.float()
-    G_21 = model.G21(args.batch_size)
-    G_21 = G_21.float()
-    D_1 = model.D1(args.batch_size)
-    D_1 = D_1.float()
-    D_2 = model.D2(args.batch_size)
-    D_2 = D_2.float()
+    G_12 = model.Generator(args.batch_size)
+    G_21 = model.Generator(args.batch_size)
+    D_1 = model.Discriminator(args.batch_size)
+    D_2 = model.Discriminator(args.batch_size)
 
     G_12.weight_init(mean = 0.0, std = 0.02)
     G_21.weight_init(mean = 0.0, std = 0.02)
-    #D_1.weight_init(mean = 0.0, std = 0.02)
-    #D_2.weight_init(mean = 0.0, std = 0.02)
+    D_1.weight_init(mean = 0.0, std = 0.02)
+    D_2.weight_init(mean = 0.0, std = 0.02)
 
     if torch.cuda.is_available():
         G_12 = G_12.cuda()
@@ -234,9 +232,6 @@ def main(args):
 
     # load seismic dataset
     A_data, B_data = data.train_dataset(args.dir, args.batch_size, args.image_size, args.num_iter_train)
-    # load apple2orange
-    # A_data = crack_dataset.dataloader(args,"train",'crack')
-    # B_data = crack_dataset.dataloader(args,"train",'origin')
 
     model_state = args.state_dict
 
