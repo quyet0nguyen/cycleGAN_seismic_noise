@@ -61,15 +61,17 @@ class Generator(nn.Module):
     self.conv1 = conv(1, conv_dim, 4)
     self.conv2 = conv(conv_dim, conv_dim*2, 4)
     self.conv3 = conv(conv_dim*2, conv_dim*4, 4)
+    self.conv4 = conv(conv_dim*4, conv_dim*8, 4)
 
     #residual blocks
-    self.conv4 = conv(conv_dim*4, conv_dim*4, 3, 1, 1)
-    self.conv5 = conv(conv_dim*4, conv_dim*4, 3, 1, 1)
+    self.conv5 = conv(conv_dim*8, conv_dim*8, 3, 1, 1)
+    self.conv6 = conv(conv_dim*8, conv_dim*8, 3, 1, 1)
 
     #decoding blocks
-    self.deconv1 = deconv(conv_dim*4, conv_dim*2, 4)
-    self.deconv2 = deconv(conv_dim*2, conv_dim, 4)
-    self.deconv3 = deconv(conv_dim, 1, 4, bn = False)
+    self.deconv1 = deconv(conv_dim*8, conv_dim*4, 4)
+    self.deconv2 = deconv(conv_dim*4, conv_dim*2, 4)
+    self.deconv3 = deconv(conv_dim*2, conv_dim, 4)
+    self.deconv4 = deconv(conv_dim, 1, 4, bn = False)
   
   # weight_init
   def weight_init(self, mean, std):
@@ -80,13 +82,15 @@ class Generator(nn.Module):
     out = F.leaky_relu(self.conv1(x), 0.05)       
     out = F.leaky_relu(self.conv2(out), 0.05)
     out = F.leaky_relu(self.conv3(out), 0.05)
+    out = F.leaky_relu(self.conv4(out), 0.05)
 
-    out = F.leaky_relu(self.conv4(out), 0.05)      
     out = F.leaky_relu(self.conv5(out), 0.05)      
+    out = F.leaky_relu(self.conv6(out), 0.05)      
 
     out = F.leaky_relu(self.deconv1(out), 0.05)
     out = F.leaky_relu(self.deconv2(out), 0.05)
-    out = F.tanh(self.deconv3(out))                 
+    out = F.leaky_relu(self.deconv3(out), 0.05)
+    out = F.tanh(self.deconv4(out))                 
     
     return out
 
@@ -100,11 +104,10 @@ class Discriminator(nn.Module):
   """
   def __init__(self, conv_dim):
     super(Discriminator, self).__init__()
-    self.conv1 = nn.Conv2d(1, conv_dim, 4, 2, 1, bias = False)
-    self.conv2 = nn.utils.spectral_norm(nn.Conv2d(conv_dim, conv_dim*2, 4, 2, 1, bias = False))
-    self.conv3 = nn.utils.spectral_norm(nn.Conv2d(conv_dim*2, conv_dim*4, 4, 2, 1, bias = False))
-    self.conv4 = nn.utils.spectral_norm(nn.Conv2d(conv_dim*4, conv_dim*8, 4, 1, 0, bias = False))
-    self.fc = nn.utils.spectral_norm(nn.Conv2d(conv_dim*8, 1, 4, 1, 0,bias = False))
+    self.conv1 = conv(1, conv_dim, 4, bn = False)
+    self.conv2 = conv(conv_dim, conv_dim*2, 4)
+    self.conv3 = conv(conv_dim*2, conv_dim*4, 4)
+    self.fc = conv(conv_dim*4, 1, 4, 1, 0, False)
   
   # weight_init
   def weight_init(self, mean, std):
@@ -115,9 +118,8 @@ class Discriminator(nn.Module):
     out = F.leaky_relu(self.conv1(x), 0.05)
     out = F.leaky_relu(self.conv2(out), 0.05)
     out = F.leaky_relu(self.conv3(out), 0.05)
-    out = F.leaky_relu(self.conv4(out), 0.05)
     out = self.fc(out).squeeze() 
-    return out
+    return F.avg_pool2d(out, out.size()[2:]).view(out.size()[0], -1)
 
 if __name__ == "__main__":
     G12 = Generator(64)
