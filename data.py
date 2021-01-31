@@ -23,7 +23,7 @@ def generate_image_seismic(root_img, image_size, batch_size, num_iter):
     #fill minimum number in dataset
     #X_train.fill(0)
     
-    for _ in range(batch_size*num_iter-1):
+    for _ in range(batch_size*num_iter):
         x = random.randrange(root_img.shape[0]-image_size)
         y = random.randrange(root_img.shape[1]-image_size)
         z = random.randrange(root_img.shape[2])

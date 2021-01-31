@@ -3,15 +3,16 @@ import torch
 import residual_model
 from argparse import ArgumentParser
 from torch.autograd import Variable
+import torchvision.utils as vutils 
 import PSNR
 import model
 
 def get_args():
     parser = ArgumentParser(description='generate seismic image using cycleGAN')
-    parser.add_argument('--batch_size', type=int, default = 64)
-    parser.add_argument('--image_size', type=int, default = 32)
+    parser.add_argument('--batch_size', type=int, default = 32)
+    parser.add_argument('--image_size', type=int, default = 64)
     parser.add_argument('--dir', type=str, default='../AiCrowdData/data_train/data.npy')
-    parser.add_argument('--state_dict', type=str, default="./state_dict_33_base.pth")
+    parser.add_argument('--state_dict', type=str, default="./state_dict_33.pth")
     args = parser.parse_args()
     return args
 
@@ -21,10 +22,16 @@ def main():
     B_test_iter = iter(Btest)
     A_test_iter = iter(Atest)
     B_test = Variable(B_test_iter.next()[0])
+    grid = vutils.make_grid(B_test, nrow=8)
+    vutils.save_image(grid,"B_image.png")
     A_test = Variable(A_test_iter.next()[0])
+    grid = vutils.make_grid(A_test, nrow=8)
+    vutils.save_image(grid,"A_image.png")
     
-    G_12 = model.Generator(64)
-    G_21 = model.Generator(64)
+    # G_12 = model.Generator(args.batch_size)
+    # G_21 = model.Generator(args.batch_size)
+    G_12 = residual_model.Generator(1,1)
+    G_21 = residual_model.Generator(1,1)
 
     checkpoint = torch.load(args.state_dict)
     G_12.load_state_dict(checkpoint['G_12_state_dict'])
@@ -32,20 +39,20 @@ def main():
 
 
     if torch.cuda.is_available():
-        test = test.cuda()
-        noised = noised.cuda()
-        G_12 = G_12.cuda()
-        G_21 = G_21.cuda()
+      A_test = A_test.cuda()
+      B_test = B_test.cuda()
+      G_12 = G_12.cuda()
+      G_21 = G_21.cuda()
 
     G_12.eval()
     G_21.eval()
 
     generate_A_image = G_21(B_test.float())
-    grid = vutils.make_grid(generate_A_image, nrow=8, normalize=True)
+    grid = vutils.make_grid(generate_A_image, nrow=8)
     vutils.save_image(grid,"generate_A_image.png")
 
     generate_B_image = G_12(A_test.float())
-    grid = vutils.make_grid(generate_A_image, nrow=8, normalize=True)
+    grid = vutils.make_grid(generate_A_image, nrow=8)
     vutils.save_image(grid,"generate_B_image.png")
 
     loss = PSNR.PSNR()
