@@ -11,7 +11,7 @@ def get_args():
     parser.add_argument('--lr', type=float, default =0.0002)
     parser.add_argument('--image_size', type=int, default = 64)
     parser.add_argument('--beta1', type=float, default = 0.5)
-    parser.add_argument('--dir', type=str, default='../AiCrowdData/data_train/data.npy')
+    parser.add_argument('--dir', type=str, default='/content/AiCrowdData/data_train/data.npy')
     parser.add_argument('--num_iter_train', type=int, default = 900)
     parser.add_argument('--state_dict', type=str, default = "")
     args = parser.parse_args()
@@ -20,7 +20,7 @@ def get_args():
 def main():
     
     args = get_args()
-    train.main(args)
+    train_residualmodel.main(args)
 
 if __name__ == "__main__":
     main()

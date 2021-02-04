@@ -33,15 +33,16 @@ def generate_image_seismic(root_img, image_size, batch_size, num_iter):
     return X_train
 
 def generate_image_noise(seismic_img, image_size, batch_size, num_iter):
-    noised_train_data = np.zeros((batch_size*num_iter,image_size,image_size))
+    noised_train_data = np.empty((batch_size*num_iter,image_size,image_size))
     noised_train_data[:,:,:] = seismic_img[:,:,:]
-    max_val = np.amax(noised_train_data)
-    min_val = np.amin(noised_train_data)
+    # max_val = np.amax(noised_train_data)
+    # min_val = np.amin(noised_train_data)
     #fill minimum number in dataset
     for _ in range(noised_train_data.shape[0]):
       size_noise = random.randrange(2,10)
       ran_noise = random.randrange(noised_train_data.shape[1]-size_noise)
-      noised_train_data[_,:,ran_noise:ran_noise+size_noise] = np.random.rand(noised_train_data.shape[1], size_noise)
+      #noised_train_data[_,:,ran_noise:ran_noise+size_noise] = np.random.rand(noised_train_data.shape[1], size_noise)
+      noised_train_data[_,:,ran_noise:ran_noise+size_noise] = np.zeros((noised_train_data.shape[1], size_noise))
 
     return noised_train_data
 
