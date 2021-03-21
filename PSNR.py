@@ -11,10 +11,12 @@ class PSNR:
 
     @staticmethod
     def __call__(y_true, y_pred):
-        max_val = max(torch.max(y_true), torch.max(y_pred))
-        print(max_val)
-        mse = torch.mean((y_true - y_pred) ** 2)
-        return 20 * torch.log10(float(max_val) / torch.sqrt(mse))
+      result = np.zeros((y_true.shape[0]))
+      for i in range(y_true.shape[0]):
+        max_val = max(torch.max(y_true[i,:,:,:]), torch.max(y_pred[i,:,:,:]))
+        mse = torch.mean((y_true[i,:,:,:] - y_pred[i,:,:,:]) ** 2)
+        result[i] = 10 * torch.log10(float(max_val) / torch.sqrt(mse))
+      return result
 
 if __name__ == '__main__':
     metric = PSNR()
