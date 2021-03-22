@@ -57,7 +57,7 @@ def reshape_data(dataset):
 def data_loader(dataset, batch_size):
     dataset = torch.tensor(dataset)
     dataset = TensorDataset(dataset)
-    dataset = DataLoader(dataset, batch_size = batch_size)
+    dataset = DataLoader(dataset, batch_size = batch_size, shuffle = True)
 
     return dataset
 

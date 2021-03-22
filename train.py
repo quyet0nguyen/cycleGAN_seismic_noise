@@ -173,21 +173,22 @@ def train(G_12, G_21, D_1, D_2, optimizer_G, optimizer_D_A, optimizer_D_B, lr_sc
         lr_scheduler_D_A.step()
         lr_scheduler_D_B.step()
 
-        name = 'state_dict_' + str(epoch) + '_.pth'
+        if epoch % 10 == 0:
+          name = 'state_dict_' + str(epoch) + '_.pth'
 
-        torch.save({"G_12_state_dict": G_12.state_dict(),
-                "G_21_state_dict": G_21.state_dict(),
-                "D_1_state_dict": D_1.state_dict(),
-                "D_2_state_dict": D_2.state_dict(),
-                "optimizer_G": optimizer_G.state_dict(),
-                "optimizer_D_A" : optimizer_D_A.state_dict(),
-                "optimizer_D_B" : optimizer_D_B.state_dict(),
-                "lr_scheduler_G" : lr_scheduler_G.state_dict(),
-                "lr_scheduler_D_A" : lr_scheduler_D_A.state_dict(),
-                "lr_scheduler_D_B" : lr_scheduler_D_B.state_dict(),
-                "epoch" : epoch,
-        },name)
-        wandb.save(name)
+          torch.save({"G_12_state_dict": G_12.state_dict(),
+                  "G_21_state_dict": G_21.state_dict(),
+                  "D_1_state_dict": D_1.state_dict(),
+                  "D_2_state_dict": D_2.state_dict(),
+                  "optimizer_G": optimizer_G.state_dict(),
+                  "optimizer_D_A" : optimizer_D_A.state_dict(),
+                  "optimizer_D_B" : optimizer_D_B.state_dict(),
+                  "lr_scheduler_G" : lr_scheduler_G.state_dict(),
+                  "lr_scheduler_D_A" : lr_scheduler_D_A.state_dict(),
+                  "lr_scheduler_D_B" : lr_scheduler_D_B.state_dict(),
+                  "epoch" : epoch,
+          },name)
+          wandb.save(name)
     
 
 def main(args):
