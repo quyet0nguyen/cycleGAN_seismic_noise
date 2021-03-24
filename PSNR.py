@@ -16,7 +16,7 @@ class PSNR:
         max_val = max(torch.max(y_true[i,:,:,:]), torch.max(y_pred[i,:,:,:]))
         mse = torch.mean((y_true[i,:,:,:] - y_pred[i,:,:,:]) ** 2)
         result[i] = 10 * torch.log10(float(max_val) / torch.sqrt(mse))
-      return result
+      return np.average(result)
 
 if __name__ == '__main__':
     metric = PSNR()
