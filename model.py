@@ -70,6 +70,8 @@ class Generator(nn.Module):
     self.conv8 = conv(conv_dim*8, conv_dim*8, 3, 1, 1)
     self.conv9 = conv(conv_dim*8, conv_dim*8, 3, 1, 1)
     self.conv10 = conv(conv_dim*8, conv_dim*8, 3, 1, 1)
+    self.conv11 = conv(conv_dim*8, conv_dim*8, 3, 1, 1)
+    self.conv12 = conv(conv_dim*8, conv_dim*8, 3, 1, 1)
 
     #decoding blocks
     self.deconv1 = deconv(conv_dim*8, conv_dim*4, 4)
@@ -94,6 +96,8 @@ class Generator(nn.Module):
     out = F.leaky_relu(self.conv8(out), 0.05)       
     out = F.leaky_relu(self.conv9(out), 0.05) 
     out = F.leaky_relu(self.conv10(out), 0.05)   
+    out = F.leaky_relu(self.conv11(out), 0.05) 
+    out = F.leaky_relu(self.conv12(out), 0.05)   
 
     out = F.leaky_relu(self.deconv1(out), 0.05)
     out = F.leaky_relu(self.deconv2(out), 0.05)

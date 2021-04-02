@@ -18,13 +18,9 @@ def get_args():
 
 def main():
     args = get_args()
-    Atest, Btest = data.train_dataset(args.dir, args.batch_size, args.image_size, 1)
+    Atest, Btest = data.train_dataset(args.dir, args.batch_size, args.image_size, 1000)
     B_test_iter = iter(Btest)
     A_test_iter = iter(Atest)
-    B_test = Variable(B_test_iter.next()[0])
-    A_test = Variable(A_test_iter.next()[0])
-    grid = vutils.make_grid(B_test, nrow=8)
-    vutils.save_image(grid,"B_image.png")
     
     G_21 = model.Generator(args.batch_size)
     #G_21 = residual_model.Generator(1,1)
@@ -32,23 +28,34 @@ def main():
     checkpoint = torch.load(args.state_dict)
     G_21.load_state_dict(checkpoint['G_21_state_dict'])
 
+    estimate_loss_generate = 0
 
-    if torch.cuda.is_available():
-      B_test = B_test.cuda()
-      A_test = A_test.cuda()
-      G_21 = G_21.cuda()
+    for i in range(1000):
+      B_test = Variable(B_test_iter.next()[0])
+      A_test = Variable(A_test_iter.next()[0])
+      grid = vutils.make_grid(B_test, nrow=8)
+      vutils.save_image(grid,"B_image.png")
 
-    G_21.eval()
+      if torch.cuda.is_available():
+        B_test = B_test.cuda()
+        A_test = A_test.cuda()
+        G_21 = G_21.cuda()
 
-    generate_A_image = G_21(B_test.float())
-    grid = vutils.make_grid(generate_A_image, nrow=8)
-    vutils.save_image(grid,"generate_A_image.png")
+      G_21.eval()
 
-    loss = PSNR.PSNR()
+      generate_A_image = G_21(B_test.float())
+      grid = vutils.make_grid(generate_A_image, nrow=8)
+      vutils.save_image(grid,"generate_A_image.png")
 
-    estimate_loss_generate = loss(generate_A_image, A_test)
+      loss = PSNR.PSNR()
+
+      estimate_loss_generate = estimate_loss_generate +loss(generate_A_image, A_test)
+    
+    estimate_loss_generate = estimate_loss_generate /1000
 
     print(estimate_loss_generate)
+
+      
 
 if __name__ == "__main__":
     main()
