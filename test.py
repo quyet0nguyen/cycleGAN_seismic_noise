@@ -6,6 +6,7 @@ from torch.autograd import Variable
 import torchvision.utils as vutils 
 import PSNR
 import model
+import piq
 
 def get_args():
     parser = ArgumentParser(description='generate seismic image using cycleGAN')
@@ -22,15 +23,15 @@ def main():
     B_test_iter = iter(Btest)
     A_test_iter = iter(Atest)
     
-    G_21 = model.Generator(args.batch_size)
-    #G_21 = residual_model.Generator(1,1)
+    #G_21 = model.Generator(args.batch_size)
+    G_21 = residual_model.Generator(1,1)
 
     checkpoint = torch.load(args.state_dict)
     G_21.load_state_dict(checkpoint['G_21_state_dict'])
 
     estimate_loss_generate = 0
 
-    for i in range(1000):
+    for i in range(10):
       B_test = Variable(B_test_iter.next()[0])
       A_test = Variable(A_test_iter.next()[0])
       grid = vutils.make_grid(B_test, nrow=8)
@@ -47,11 +48,9 @@ def main():
       grid = vutils.make_grid(generate_A_image, nrow=8)
       vutils.save_image(grid,"generate_A_image.png")
 
-      loss = PSNR.PSNR()
-
-      estimate_loss_generate = estimate_loss_generate +loss(generate_A_image, A_test)
+      estimate_loss_generate = estimate_loss_generate + torch.mean(piq.psnr(generate_A_image, A_test, data_range=1., reduction='none'))
     
-    estimate_loss_generate = estimate_loss_generate /1000
+    estimate_loss_generate = estimate_loss_generate /10
 
     print(estimate_loss_generate)
 
