@@ -80,5 +80,3 @@ if __name__ == "__main__":
     batch_size = 64
     image_size = 32
     num_iter = 900
-    print(train_dataset(dir, batch_size, image_size, num_iter))
-
